@@ -44,12 +44,15 @@ yarn-error.log
 
 # result directory
 /public/result/*.**
+!/public/result/.gitkeep
 
 # upload directory
 /public/upload/*.**
+!/public/upload/.gitkeep
 
 # temp directory
 /temp/*.**
+!/temp/.gitkeep
 
 # undifined directory   
 /undefined/
