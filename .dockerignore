@@ -1,0 +1,4 @@
+node_modules
+*.lock
+/public/result/*.*
+/public/upload/*.*
