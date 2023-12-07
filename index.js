@@ -38,7 +38,7 @@ app.post("/predict", upload.single("image"), async (req, res) => {
       imgUploadPath,
       result.predictions
     );
-    
+
     result.predictions = await ml.predictCNN(result.predictions);
     const imgResultPath = await ml.drawBoundingBoxes(
       imgUploadPath,
@@ -72,6 +72,6 @@ app.listen(PORT, HOST, async () => {
 
   // Load model
   await ml.loadModel(
-    `https://ml-ridwan-jazgayulua-et.a.run.app/public/model-ml/model.json`
+    `${baseURL}/public/model-ml/model.json`
   );
 });
