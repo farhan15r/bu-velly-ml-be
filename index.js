@@ -1,9 +1,10 @@
-const express = require("express");
-require("dotenv/config");
-const ML = require("./ml.js");
-const multer = require("multer");
-var cors = require("cors");
-const bodyParser = require('body-parser');
+import express, { json } from "express";
+import "dotenv/config";
+import ML from "./ml.js";
+import multer from "multer";
+import cors from "cors";
+import bodyParser from 'body-parser';
+import Convert from "./convert.js";
 
 const upload = multer();
 
@@ -16,7 +17,7 @@ const app = express();
 const ml = new ML();
 
 app.use(cors());
-app.use(express.json());
+app.use(json());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(`/public`, express.static("./public"));
 
@@ -25,14 +26,24 @@ app.get("/", (req, res) => {
 });
 
 app.post("/predict", upload.single("image"), async (req, res) => {
-  if (!req.file.mimetype.includes("png")) {
+  // if (!req.file.mimetype.includes("png")) {
+  //   return res.status(400).json({
+  //     message: "File must be png",
+  //   });
+  // }
+  if (!req.file.mimetype.includes("tif")) {
     return res.status(400).json({
-      message: "File must be png",
+      message: "File must be tif",
     });
   }
 
   try {
-    const imgUploadPath = await ml.saveImage(req.file.buffer);
+    // const imgUploadPath = await ml.saveImage(req.file.buffer);
+    const convert = new Convert(req.file.buffer);
+    await convert.convertTifToPng();
+
+    const imgUploadPath = convert.imgPathPng;
+
     const result = await ml.predictYOLO(imgUploadPath);
     result.predictions = await ml.cropImageFromYOLO(
       imgUploadPath,

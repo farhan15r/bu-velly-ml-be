@@ -1,7 +1,7 @@
-const tf = require("@tensorflow/tfjs");
-const { createCanvas, loadImage } = require("canvas");
-const roboflow = require("roboflow");
-const fs = require("fs");
+import { loadLayersModel, browser, scalar, dispose } from "@tensorflow/tfjs";
+import { createCanvas, loadImage } from "canvas";
+import roboflow  from "roboflow";
+import { writeFileSync, createWriteStream, unlinkSync } from "fs";
 
 const API_KEY = process.env.ROBOFLOW_API_KEY;
 const MODEL_URL = process.env.ROBOFLOW_MODEL_URL;
@@ -19,7 +19,7 @@ class ML {
   async loadModel(modelURL) {
     console.log("Loading model...");
     console.log(modelURL);
-    this.model = await tf.loadLayersModel(modelURL);
+    this.model = await loadLayersModel(modelURL);
 
     console.log("Model loaded!");
     this.modelLoaded = true;
@@ -35,7 +35,7 @@ class ML {
 
     const imgPath = `public/upload/${name}.png`;
 
-    await fs.writeFileSync(`./${imgPath}`, imgBuffer);
+    await writeFileSync(`./${imgPath}`, imgBuffer);
 
     return imgPath;
   }
@@ -94,7 +94,7 @@ class ML {
 
       // Save the cropped image to a file
       const outputImagePath = `./temp/${imageName}_${index}.jpg`;
-      const output = fs.createWriteStream(outputImagePath);
+      const output = createWriteStream(outputImagePath);
       const stream = cropCanvas.createJPEGStream();
       await new Promise((resolve, reject) => {
         stream.pipe(output);
@@ -123,11 +123,11 @@ class ML {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      const inputTensor = tf.browser
+      const inputTensor = browser
         .fromPixels(canvas)
         .resizeNearestNeighbor([90, 90])
         .toFloat()
-        .div(tf.scalar(255))
+        .div(scalar(255))
         .expandDims();
 
       // Perform prediction
@@ -137,7 +137,7 @@ class ML {
       const predictionsArray = await cnnPredictions.data();
 
       // Make sure to clean up
-      tf.dispose([inputTensor, cnnPredictions]);
+      dispose([inputTensor, cnnPredictions]);
 
       const label = ["s0", "s1", "s2", "s3", "s4"];
 
@@ -200,7 +200,7 @@ class ML {
     const outputPath = imgPath.replace("upload", "result");
 
     // Save the image with bounding boxes
-    const outputImage = fs.createWriteStream(outputPath); // Gantilah dengan path gambar keluaran
+    const outputImage = createWriteStream(outputPath); // Gantilah dengan path gambar keluaran
     canvas.createPNGStream().pipe(outputImage);
 
     return outputPath;
@@ -212,9 +212,9 @@ class ML {
    */
   cleanUp(predictions) {
     predictions.forEach((prediction) => {
-      fs.unlinkSync(prediction.imagePath);
+      unlinkSync(prediction.imagePath);
     });
   }
 }
 
-module.exports = ML;
+export default ML;
