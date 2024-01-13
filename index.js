@@ -3,8 +3,9 @@ import "dotenv/config";
 import ML from "./ml.js";
 import multer from "multer";
 import cors from "cors";
-import bodyParser from 'body-parser';
+import bodyParser from "body-parser";
 import Convert from "./convert.js";
+import Prediction from "./models/Prediction.js";
 
 const upload = multer();
 
@@ -18,11 +19,17 @@ const ml = new ML();
 
 app.use(cors());
 app.use(json());
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.json({ limit: "10mb" }));
 app.use(`/public`, express.static("./public"));
 
 app.get("/", (req, res) => {
   res.send(`model loaded is ${ml.modelLoaded}`);
+});
+
+app.get("/predict", async (req, res) => {
+  const prediction = new Prediction();
+  const predictions = await prediction.getAll();
+  res.json(predictions);
 });
 
 app.post("/predict", upload.single("image"), async (req, res) => {
@@ -58,6 +65,13 @@ app.post("/predict", upload.single("image"), async (req, res) => {
 
     ml.cleanUp(result.predictions);
 
+    const prediction = new Prediction({
+      id: convert.imgName,
+      uploadUrl: `/${imgUploadPath}`,
+      resultUrl: `/${imgResultPath}`,
+    });
+    await prediction.save();
+
     res.json({
       uploaded_image: `/${imgUploadPath}`,
       result_image: `/${imgResultPath}`,
@@ -82,7 +96,5 @@ app.listen(PORT, HOST, async () => {
   const baseURL = `${BASE_URL}`;
 
   // Load model
-  await ml.loadModel(
-    `${baseURL}/public/model-ml/model.json`
-  );
+  await ml.loadModel(`${baseURL}/public/model-ml/model.json`);
 });
