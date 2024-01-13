@@ -5,10 +5,21 @@ import { fromArrayBuffer } from "geotiff";
 const { readFileSync } = fs;
 
 class Convert {
+  /**
+   * @param {Buffer} imgBuffer
+   * @returns {void}
+   */
   constructor(imgBuffer) {
     this.imgBuffer = imgBuffer;
   }
 
+  /**
+   * Save image to temp folder for further processing
+   * generate this.imgName
+   * generate this.imgPathTif
+   * @returns {Promise<void>}
+   * @private
+   */
   async saveImage() {
     this.imgName = Math.floor(new Date().getTime() / 1000);
 
@@ -17,6 +28,12 @@ class Convert {
     await fs.writeFileSync(`${this.imgPathTif}`, this.imgBuffer);
   }
 
+  /**
+   * Generate csv file from tif
+   * generate this.csvPath
+   * @returns {Promise<void>}
+   * @private
+   */
   async generateCsvPixels() {
     const imageBuffer = readFileSync(this.imgPathTif);
     const tiff = await fromArrayBuffer(imageBuffer.buffer);
@@ -91,6 +108,12 @@ class Convert {
     });
   }
 
+  /**
+   * Generate png from csv
+   * generate this.imgPathPng
+   * @returns {Promise<void>}
+   * @private
+   */
   async generatePngFromCsv() {
     const csvBuffer = readFileSync(this.csvPath);
     const csvString = csvBuffer.toString();
@@ -129,11 +152,20 @@ class Convert {
     });
   }
 
+  /**
+   * Clean up temp files
+   * @returns {void}
+   * @private
+   */
   cleanUp() {
     fs.unlinkSync(this.imgPathTif);
     fs.unlinkSync(this.csvPath);
   }
 
+  /**
+   * Convert tif to png
+   * @returns {Promise<void>}
+   */
   async convertTifToPng() {
     await this.saveImage();
     await this.generateCsvPixels();
