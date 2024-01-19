@@ -215,6 +215,18 @@ class ML {
       unlinkSync(prediction.imagePath);
     });
   }
+
+  /**
+   * @param {string} name 
+   * @returns {void}
+   */
+  deletePrediction(name) {
+    const imgPath = `public/upload/${name}.png`;
+    const resultPath = `public/result/${name}.png`;
+
+    unlinkSync(imgPath);
+    unlinkSync(resultPath);
+  }
 }
 
 export default ML;

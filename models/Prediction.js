@@ -57,6 +57,64 @@ class Prediction {
 
     return predictions;
   }
+
+  /**
+   * Get a detection by its id
+   * @param {string} id
+   * @returns {Promise<Prediction>}
+   * @throws {Error} If the detection is not found
+   */
+  async getById(id) {
+    if (!id) throw new Error("id is required");
+
+    if (!this.client) {
+      this.client = await pool.connect();
+    }
+
+    const query = `SELECT id, upload_url, result_url, created_at, updated_at FROM predictions WHERE id = $1`;
+    const values = [id];
+    const result = await this.client.query(query, values);
+    if (result.rows.length === 0) {
+      throw new Error(`Prediction not found with id ${id}`);
+    }
+
+    const row = result.rows[0];
+    
+    this.id = row.id;
+    this.uploadUrl = row.upload_url;
+    this.resultUrl = row.result_url;
+    this.createdAt = row.created_at;
+    this.updatedAt = row.updated_at;
+
+    return this;
+  }
+
+  /**
+   * Delete a detection by its id
+   * @param {string?} id If not provided, use the id of the current detection
+   * @returns {Promise<void>}
+   * @throws {Error} If the detection is not found
+   */
+  async delete(id) {
+    if (!this.id) await this.getById(id);
+
+    if (!this.client) {
+      this.client = await pool.connect();
+    }
+
+    const query = `DELETE FROM predictions WHERE id = $1`;
+    const values = [this.id];
+
+    await this.client.query(query, values);
+
+    this.id = undefined;
+    this.uploadUrl = undefined;
+    this.resultUrl = undefined;
+    this.createdAt = undefined;
+    this.updatedAt = undefined;
+
+    return this;
+  }
 }
 
 export default Prediction;
