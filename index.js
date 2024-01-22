@@ -78,12 +78,25 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     });
     await prediction.save();
 
-    res.json({
+    res.status(201).json({
       uploaded_image: `/${imgUploadPath}`,
       result_image: `/${imgResultPath}`,
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+});
+
+app.get("/predict/:id", async (req, res) => {
+  try {
+    const prediction = new Prediction();
+    await prediction.getById(req.params.id);
+
+    res.json(prediction);
+  } catch (error) {
     res.status(500).json({
       message: "Internal server error",
     });
@@ -96,7 +109,7 @@ app.delete("/predict/:id", async (req, res) => {
     await prediction.getById(req.params.id);
     await prediction.delete();
 
-    ml.deletePrediction(req.params.id)
+    ml.deletePrediction(req.params.id);
 
     res.json({
       message: "success",
