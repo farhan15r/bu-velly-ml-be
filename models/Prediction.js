@@ -1,6 +1,8 @@
 import pool from "./db.js";
 
 class Prediction {
+  #client;
+
   /**
    * @param {Object} param0
    * @param {string} param0.id
@@ -16,7 +18,7 @@ class Prediction {
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
 
-    this.client = undefined;
+    this.#client = undefined;
   }
 
   /**
@@ -24,13 +26,13 @@ class Prediction {
    * @returns {Promise<void>}
    */
   async save() {
-    if (!this.client) {
-      this.client = await pool.connect();
+    if (!this.#client) {
+      this.#client = await pool.connect();
     }
 
     const query = `INSERT INTO predictions (id, upload_url, result_url) VALUES ($1, $2, $3)`;
     const values = [this.id, this.uploadUrl, this.resultUrl];
-    await this.client.query(query, values);
+    await this.#client.query(query, values);
   }
 
   /**
@@ -38,12 +40,12 @@ class Prediction {
    * @returns {Promise<Prediction[]>}
    */
   async getAll() {
-    if (!this.client) {
-      this.client = await pool.connect();
+    if (!this.#client) {
+      this.#client = await pool.connect();
     }
 
     const query = `SELECT id, upload_url, result_url, created_at, updated_at FROM predictions`;
-    const result = await this.client.query(query);
+    const result = await this.#client.query(query);
     const predictions = result.rows.map(
       (row) =>
         new Prediction({
@@ -67,13 +69,13 @@ class Prediction {
   async getById(id) {
     if (!id) throw new Error("id is required");
 
-    if (!this.client) {
-      this.client = await pool.connect();
+    if (!this.#client) {
+      this.#client = await pool.connect();
     }
 
     const query = `SELECT id, upload_url, result_url, created_at, updated_at FROM predictions WHERE id = $1`;
     const values = [id];
-    const result = await this.client.query(query, values);
+    const result = await this.#client.query(query, values);
     if (result.rows.length === 0) {
       throw new Error(`Prediction not found with id ${id}`);
     }
@@ -98,14 +100,14 @@ class Prediction {
   async delete(id) {
     if (!this.id) await this.getById(id);
 
-    if (!this.client) {
-      this.client = await pool.connect();
+    if (!this.#client) {
+      this.#client = await pool.connect();
     }
 
     const query = `DELETE FROM predictions WHERE id = $1`;
     const values = [this.id];
 
-    await this.client.query(query, values);
+    await this.#client.query(query, values);
 
     this.id = undefined;
     this.uploadUrl = undefined;
