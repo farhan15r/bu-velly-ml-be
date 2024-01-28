@@ -11,6 +11,7 @@ class Convert {
    */
   constructor(imgBuffer) {
     this.imgBuffer = imgBuffer;
+    this.pixelValueList = [];
   }
 
   /**
@@ -29,12 +30,11 @@ class Convert {
   }
 
   /**
-   * Generate csv file from tif
-   * generate this.csvPath
+   * Generate array of pixels
    * @returns {Promise<void>}
    * @private
    */
-  async generateCsvPixels() {
+  async generateArrPixels() {
     const imageBuffer = readFileSync(this.imgPathTif);
     const tiff = await fromArrayBuffer(imageBuffer.buffer);
 
@@ -61,14 +61,14 @@ class Convert {
       }
     }
 
-    const pixelValueList = [];
+    this.pixelValueList = [];
 
     for (let i = 0; i < this.imgWidth; i++) {
-      for (let j = 0; j < this.imgHeight; j++) {        
+      for (let j = 0; j < this.imgHeight; j++) {
         const pixelValue = (
           await image.readRasters({ window: [i, j, i + 1, j + 1] })
         )[0][0];
-        pixelValueList.push([
+        this.pixelValueList.push([
           i + 1,
           j + 1,
           pixelValue,
@@ -80,54 +80,22 @@ class Convert {
         ]);
       }
     }
-
-    this.csvPath = `temp/${this.imgName}.csv`;
-    const writeStream = fs.createWriteStream(this.csvPath);
-    writeStream.write("x,y,pixelValue,normalizedPixelValue,rgbValue\n");
-
-    for (let i = 0; i < pixelValueList.length; i++) {
-      await new Promise((resolve, reject) => {
-        writeStream.write(`${pixelValueList[i].join(",")}\n`, (error) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
-      });
-    }
-
-    await new Promise((resolve, reject) => {
-      writeStream.end((error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
   }
 
   /**
-   * Generate png from csv
-   * generate this.imgPathPng
+   * Generate png from array of pixels
    * @returns {Promise<void>}
    * @private
    */
-  async generatePngFromCsv() {
-    const csvBuffer = readFileSync(this.csvPath);
-    const csvString = csvBuffer.toString();
-    const csvArray = csvString.split("\n");
-    const csvData = csvArray.map((line) => line.split(","));
-
+  async generatePngFromArr() {
     const X = [];
     const Y = [];
     const pixelValueNormalized = [];
 
-    for (let i = 1; i < csvData.length; i++) {
-      X.push(Number(csvData[i][0]));
-      Y.push(Number(csvData[i][1]));
-      pixelValueNormalized.push(Number(csvData[i][3]));
+    for (let i = 1; i < this.pixelValueList.length; i++) {
+      X.push(Number(this.pixelValueList[i][0]));
+      Y.push(Number(this.pixelValueList[i][1]));
+      pixelValueNormalized.push(Number(this.pixelValueList[i][3]));
     }
 
     const canvas = new Canvas(this.imgWidth, this.imgHeight);
@@ -145,7 +113,9 @@ class Convert {
 
     this.imgPathPng = `public/upload/${this.imgName}.png`;
 
-    const writeSteram = canvas.createPNGStream().pipe(fs.createWriteStream(this.imgPathPng));
+    const writeSteram = canvas
+      .createPNGStream()
+      .pipe(fs.createWriteStream(this.imgPathPng));
     await new Promise((resolve, reject) => {
       writeSteram.on("finish", resolve);
       writeSteram.on("error", reject);
@@ -159,7 +129,6 @@ class Convert {
    */
   cleanUp() {
     fs.unlinkSync(this.imgPathTif);
-    fs.unlinkSync(this.csvPath);
   }
 
   /**
@@ -168,8 +137,8 @@ class Convert {
    */
   async convertTifToPng() {
     await this.saveImage();
-    await this.generateCsvPixels();
-    await this.generatePngFromCsv();
+    await this.generateArrPixels();
+    await this.generatePngFromArr();
     this.cleanUp();
   }
 }
