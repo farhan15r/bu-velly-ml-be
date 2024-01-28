@@ -1,6 +1,6 @@
 import InvariantError from "../../exceptions/InvariantError.js";
 import ML from "../../utils/ML.js";
-import Convert from "../../utils/convert.js";
+import Convert from "../../utils/Convert.js";
 import Prediction from "./../../models/Prediction.js";
 
 const ml = new ML();
