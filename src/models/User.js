@@ -30,6 +30,8 @@ class User {
     const query = `INSERT INTO users (username, password) VALUES ($1, $2)`;
     const values = [this.username, this.#encryptPassword];
     await this.#client.query(query, values);
+
+    await this.#client.release();
   }
 
   async isUsernameExist() {
@@ -42,6 +44,8 @@ class User {
     const result = await this.#client.query(query, values);
 
     if (result.rows.length) throw new InvariantError("Username already exist");
+
+    await this.#client.release();
   }
 
   async getByUsername(username) {
@@ -62,6 +66,8 @@ class User {
     this.#encryptPassword = row.password;
     this.createdAt = row.created_at;
     this.updatedAt = row.updated_at;
+
+    await this.#client.release();
 
     return this
   }

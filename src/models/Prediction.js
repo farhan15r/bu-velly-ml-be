@@ -1,5 +1,5 @@
 import pool from "./db.js";
-import NotFoundError from './../exceptions/NotFoundError.js';
+import NotFoundError from "./../exceptions/NotFoundError.js";
 
 class Prediction {
   #client;
@@ -34,6 +34,8 @@ class Prediction {
     const query = `INSERT INTO predictions (id, upload_url, result_url) VALUES ($1, $2, $3)`;
     const values = [this.id, this.uploadUrl, this.resultUrl];
     await this.#client.query(query, values);
+
+    await this.#client.release();
   }
 
   /**
@@ -57,6 +59,8 @@ class Prediction {
           updatedAt: row.updated_at,
         })
     );
+
+    await this.#client.release();
 
     return predictions;
   }
@@ -82,12 +86,14 @@ class Prediction {
     }
 
     const row = result.rows[0];
-    
+
     this.id = row.id;
     this.uploadUrl = row.upload_url;
     this.resultUrl = row.result_url;
     this.createdAt = row.created_at;
     this.updatedAt = row.updated_at;
+
+    await this.#client.release();
 
     return this;
   }
@@ -115,6 +121,8 @@ class Prediction {
     this.resultUrl = undefined;
     this.createdAt = undefined;
     this.updatedAt = undefined;
+
+    await this.#client.release();
 
     return this;
   }
