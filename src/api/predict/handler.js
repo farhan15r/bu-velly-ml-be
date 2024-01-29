@@ -37,13 +37,9 @@ const getPredict = async (req, res, next) => {
 
 const postPredict = async (req, res, next) => {
   try {
-    // console.log(req.files);
-
-    // throw new InvariantError("File must be uploaded");
-
     if (!ml.modelLoaded) throw new InvariantError("Model is not loaded");
 
-    if (!req.files[0]) throw new InvariantError("File must be uploaded");
+    if (!req.files || !req.files[0]) throw new InvariantError("File must be uploaded");
 
     const image = req.files[0];
 
