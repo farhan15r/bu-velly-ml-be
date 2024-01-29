@@ -1,3 +1,4 @@
+import ClientError from "../exceptions/ClientError.js";
 import InvariantError from "../exceptions/InvariantError.js";
 import pool from "./db.js";
 import bcrypt from "bcrypt";
@@ -71,7 +72,7 @@ class User {
 
   async comparePassword(password) {
     const result = await bcrypt.compare(password, this.#encryptPassword);
-    if (!result) throw new Error("Password mismatch");
+    if (!result) throw new ClientError("Password mismatch");
   }
 }
 

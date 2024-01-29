@@ -1,4 +1,5 @@
 import pool from "./db.js";
+import NotFoundError from './../exceptions/NotFoundError.js';
 
 class Prediction {
   #client;
@@ -77,7 +78,7 @@ class Prediction {
     const values = [id];
     const result = await this.#client.query(query, values);
     if (result.rows.length === 0) {
-      throw new Error(`Prediction not found with id ${id}`);
+      throw new NotFoundError(`Prediction not found with id ${id}`);
     }
 
     const row = result.rows[0];
