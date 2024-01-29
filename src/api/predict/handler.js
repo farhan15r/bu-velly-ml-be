@@ -98,6 +98,9 @@ const deletePredictById = async (req, res, next) => {
     const prediction = new Prediction();
     await prediction.getById(id);
     await prediction.delete();
+
+    ml.deletePrediction(id);
+
     res.json({
       message: "Prediction deleted",
     });
