@@ -12,6 +12,21 @@ class ML {
     this.modelLoaded = false;
   }
 
+  getColor(label) {
+    switch (label) {
+      case "S0":
+        return "rgb(0, 255, 0)";
+      case "S1":
+        return "rgb(165, 255, 0)";
+      case "S2":
+        return "rgb(255, 255, 0)";
+      case "S3":
+        return "rgb(255, 165, 0)";
+      case "S4":
+        return "rgb(255, 0, 0)";
+    }
+  }
+
   /**
    * @param {string} modelURL
    * @returns {Promise<void>}
@@ -139,7 +154,7 @@ class ML {
       // Make sure to clean up
       dispose([inputTensor, cnnPredictions]);
 
-      const label = ["s0", "s1", "s2", "s3", "s4"];
+      const label = ["S0", "S1", "S2", "S3", "S4"];
 
       const cnnResult = {
         label: label[predictionsArray.indexOf(Math.max(...predictionsArray))],
@@ -170,31 +185,29 @@ class ML {
       const width = prediction.width;
       const height = prediction.height;
 
-      // Calculate the center point
-      const centerX = x + width / 2;
-      const centerY = y + height / 2;
-
       // Calculate half-width and half-height for the bounding box
       const halfWidth = width / 2;
       const halfHeight = height / 2;
 
       // Set the style for the bounding box
-      context.strokeStyle = "red";
+      context.strokeStyle = this.getColor(prediction.cnn.label);
       context.lineWidth = 2;
 
       // Draw the bounding box with the center point
       context.strokeRect(x - halfWidth, y - halfHeight, width, height);
 
+      const text = `${i + 1}. ${prediction.cnn.label}`;
+
       // Draw the label background
-      context.fillStyle = "red";
+      context.fillStyle = this.getColor(prediction.cnn.label);
       context.font = "24px Arial";
-      let textWidth = context.measureText(prediction.cnn.label).width;
-      context.fillRect(x - halfWidth, y - halfHeight - 30, textWidth + 10, 30);
+      let textWidth = (context.measureText(text).width) + 6;
+      context.fillRect(x - halfWidth, y - halfHeight, textWidth + 10, 30);
 
       // write the label
-      context.fillStyle = "white";
+      context.fillStyle = "black";
       context.font = "28px Arial";
-      context.fillText(prediction.cnn.label, x - halfWidth, y - halfHeight);
+      context.fillText(text, x - halfWidth + 3, y - halfHeight + 25);
     }
 
     const outputPath = imgPath.replace("upload", "result");
@@ -205,7 +218,7 @@ class ML {
 
     return outputPath;
   }
-  
+
   /**
    * @param {Array<Object>} predictions
    * @returns {void}
