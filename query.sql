@@ -7,7 +7,7 @@ CREATE TABLE predictions (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 )
 
-DROP TABLE IF EXISTS detections
+DROP TABLE IF EXISTS predictions
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,

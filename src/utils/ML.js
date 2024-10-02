@@ -201,7 +201,7 @@ class ML {
       // Draw the label background
       context.fillStyle = this.getColor(prediction.cnn.label);
       context.font = "24px Arial";
-      let textWidth = (context.measureText(text).width) + 6;
+      let textWidth = context.measureText(text).width + 6;
       context.fillRect(x - halfWidth, y - halfHeight, textWidth + 10, 30);
 
       // write the label
@@ -230,7 +230,7 @@ class ML {
   }
 
   /**
-   * @param {string} name 
+   * @param {string} name
    * @returns {void}
    */
   deletePrediction(name) {
@@ -239,6 +239,48 @@ class ML {
 
     unlinkSync(imgPath);
     unlinkSync(resultPath);
+  }
+
+  /**
+   * @param {number} x1
+   * @param {number} y1
+   * @param {number} x2
+   * @param {number} y2
+   * @returns {number}
+   */
+  #calculateDistance(x1, y1, x2, y2) {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  }
+
+  /**
+   * @param {Array<Object>} predictions
+   * @returns {Array<Array>}
+   */
+  calculateDistanceEachObjects(predictions) {
+    const distanceEachObjects = [];
+
+    for (let i = 0; i < predictions.length; i++) {
+      const prediction = predictions[i];
+
+      const x1 = prediction.x;
+      const y1 = prediction.y;
+
+      const sourceObject = [];
+
+      for (let j = 0; j < predictions.length; j++) {
+        const prediction2 = predictions[j];
+
+        const x2 = prediction2.x;
+        const y2 = prediction2.y;
+
+        const distanceToDestination = this.#calculateDistance(x1, y1, x2, y2);
+
+        sourceObject.push(distanceToDestination);
+      }
+
+      distanceEachObjects.push(sourceObject);
+    }
+    return distanceEachObjects;
   }
 }
 

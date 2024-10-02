@@ -52,6 +52,7 @@ const postPredict = async (req, res, next) => {
     const imgUploadPath = convert.imgPathPng;
 
     const result = await ml.predictYOLO(imgUploadPath);
+
     result.predictions = await ml.cropImageFromYOLO(
       imgUploadPath,
       result.predictions
@@ -62,6 +63,8 @@ const postPredict = async (req, res, next) => {
       imgUploadPath,
       result.predictions
     );
+
+    const distanceEachOthers = ml.calculateDistanceEachObjects(result.predictions);
 
     ml.cleanUp(result.predictions);
 
@@ -75,6 +78,7 @@ const postPredict = async (req, res, next) => {
     res.status(201).json({
       uploaded_image: `/${imgUploadPath}`,
       result_image: `/${imgResultPath}`,
+      distanceEachOthers,
     });
   } catch (error) {
     next(error);
