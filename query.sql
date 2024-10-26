@@ -1,4 +1,4 @@
--- Active: 1692371058716@@127.0.0.1@5432@db_ml_velly@public
+-- Active: 1717313701864@@127.0.0.1@5432@db_ml_velly
 CREATE TABLE predictions (
     id VARCHAR PRIMARY KEY,
     upload_url VARCHAR NOT NULL,
@@ -18,3 +18,13 @@ CREATE TABLE users (
 )
 
 DROP TABLE IF EXISTS users
+
+CREATE TABLE distance_objects (
+    id SERIAL PRIMARY KEY,
+    prediction_id VARCHAR NOT NULL,
+    object_source_index INTEGER NOT NULL,
+    object_target_index INTEGER NOT NULL,
+    distance FLOAT NOT NULL
+);
+
+DROP TABLE IF EXISTS distance_objects

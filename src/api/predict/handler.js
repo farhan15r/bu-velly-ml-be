@@ -2,6 +2,8 @@ import InvariantError from "../../exceptions/InvariantError.js";
 import ML from "../../utils/ML.js";
 import Convert from "../../utils/Convert.js";
 import Prediction from "./../../models/Prediction.js";
+import DistanceObject from "../../models/DistanceObject.js";
+import DistanceObjects from "../../models/DistanceObjects.js";
 
 const ml = new ML();
 
@@ -39,7 +41,8 @@ const postPredict = async (req, res, next) => {
   try {
     if (!ml.modelLoaded) throw new InvariantError("Model is not loaded");
 
-    if (!req.files || !req.files[0]) throw new InvariantError("File must be uploaded");
+    if (!req.files || !req.files[0])
+      throw new InvariantError("File must be uploaded");
 
     const image = req.files[0];
 
@@ -64,7 +67,15 @@ const postPredict = async (req, res, next) => {
       result.predictions
     );
 
-    const distanceEachOthers = ml.calculateDistanceEachObjects(result.predictions);
+    const distanceEachOthers = ml.calculateDistanceEachObjects(
+      result.predictions
+    );
+
+    const distanceObjects = new DistanceObjects().transform(
+      convert.imgName,
+      distanceEachOthers
+    );
+    distanceObjects.saveAll();
 
     ml.cleanUp(result.predictions);
 
@@ -89,8 +100,13 @@ const getPredictById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const prediction = new Prediction();
-    const predictions = await prediction.getById(id);
-    res.json(predictions);
+    await prediction.getById(id);
+
+    const distanceObjects = new DistanceObjects();
+    await distanceObjects.getAllByPredictionId(id);
+    prediction.distanceObjects = distanceObjects.transformToArr2D();
+
+    res.json(prediction);
   } catch (error) {
     next(error);
   }
@@ -111,6 +127,13 @@ const deletePredictById = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
 
-export default { checkModel, loadModel, getPredict, postPredict, getPredictById, deletePredictById };
+export default {
+  checkModel,
+  loadModel,
+  getPredict,
+  postPredict,
+  getPredictById,
+  deletePredictById,
+};
