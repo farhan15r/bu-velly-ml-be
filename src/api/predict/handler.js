@@ -87,6 +87,7 @@ const postPredict = async (req, res, next) => {
     await prediction.save();
 
     res.status(201).json({
+      id: convert.imgName,
       uploaded_image: `/${imgUploadPath}`,
       result_image: `/${imgResultPath}`,
       distanceEachOthers,
