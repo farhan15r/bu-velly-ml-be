@@ -1,6 +1,6 @@
 import { loadLayersModel, browser, scalar, dispose } from "@tensorflow/tfjs";
 import { createCanvas, loadImage } from "canvas";
-import roboflow  from "roboflow";
+import roboflow from "roboflow";
 import { writeFileSync, createWriteStream, unlinkSync } from "fs";
 
 const API_KEY = process.env.ROBOFLOW_API_KEY;
@@ -129,8 +129,6 @@ class ML {
    */
   async predictCNN(predictions) {
     for (let index = 0; index < predictions.length; index++) {
-      console.log(`Predicting image ${index + 1}...`);
-
       const prediction = predictions[index];
       const img = await loadImage(prediction.imagePath);
 
@@ -160,8 +158,6 @@ class ML {
         label: label[predictionsArray.indexOf(Math.max(...predictionsArray))],
         confidence: Math.max(...predictionsArray),
       };
-
-      console.log(cnnResult);
 
       predictions[index].cnn = cnnResult;
     }
@@ -265,17 +261,37 @@ class ML {
       const x1 = prediction.x;
       const y1 = prediction.y;
 
-      const sourceObject = [];
+      const sourceObject = {
+        objectSourceIndex: i,
+        label: prediction.cnn.label,
+        distanceTo: [],
+      };
 
       for (let j = 0; j < predictions.length; j++) {
-        const prediction2 = predictions[j];
+        if (i === j) {
+          continue;
+        }
 
-        const x2 = prediction2.x;
-        const y2 = prediction2.y;
+        const distanceTo = {
+          objectDestinationIndex: j,
+          label: predictions[j].cnn.label,
+          distance: this.#calculateDistance(
+            x1,
+            y1,
+            predictions[j].x,
+            predictions[j].y
+          ),
+        };
 
-        const distanceToDestination = this.#calculateDistance(x1, y1, x2, y2);
-
-        sourceObject.push(distanceToDestination);
+        // insert distance sortest first
+        const index = sourceObject.distanceTo.findIndex(
+          (distance) => distance.distance > distanceTo.distance
+        );
+        if (index === -1) {
+          sourceObject.distanceTo.push(distanceTo);
+        } else {
+          sourceObject.distanceTo.splice(index, 0, distanceTo);
+        }
       }
 
       distanceEachObjects.push(sourceObject);

@@ -28,3 +28,12 @@ CREATE TABLE distance_objects (
 );
 
 DROP TABLE IF EXISTS distance_objects
+
+CREATE TABLE prediction_labels (
+    id SERIAL PRIMARY KEY,
+    prediction_id VARCHAR NOT NULL,
+    object_index INTEGER NOT NULL,
+    label VARCHAR NOT NULL
+);
+
+DROP TABLE IF EXISTS prediction_labels

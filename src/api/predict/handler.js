@@ -4,6 +4,7 @@ import Convert from "../../utils/Convert.js";
 import Prediction from "./../../models/Prediction.js";
 import DistanceObject from "../../models/DistanceObject.js";
 import DistanceObjects from "../../models/DistanceObjects.js";
+import PredictionLabels from "../../models/PredictionLables.js";
 
 const ml = new ML();
 
@@ -67,6 +68,12 @@ const postPredict = async (req, res, next) => {
       result.predictions
     );
 
+    const predictionLabels = new PredictionLabels().transform(
+      convert.imgName,
+      result.predictions.map((prediction) => prediction.cnn.label)
+    );
+    await predictionLabels.saveAll();
+
     const distanceEachOthers = ml.calculateDistanceEachObjects(
       result.predictions
     );
@@ -75,7 +82,7 @@ const postPredict = async (req, res, next) => {
       convert.imgName,
       distanceEachOthers
     );
-    distanceObjects.saveAll();
+    await distanceObjects.saveAll();
 
     ml.cleanUp(result.predictions);
 

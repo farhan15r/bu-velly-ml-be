@@ -1,26 +1,36 @@
 import pool from "./db.js";
 import DistanceObject from "./DistanceObject.js";
 
+const distanceTransform = {
+  objectSourceIndex: null,
+  label: null,
+  distanceTo: [],
+};
+
 class DistanceObjects {
   #client;
 
-  transform(predictionId, distanceEachOthers = [[]]) {
-    const distanceObjects = [];
+  /**
+   * @param {string} predictionId
+   * @param {Array<Object>} distanceEach
+   * @returns {DistanceObjects}
+   */
+  transform(predictionId, distanceEachOthers = [distanceTransform]) {
 
-    for (let i = 0; i < distanceEachOthers.length; i++) {
-      for (let j = 0; j < distanceEachOthers[i].length; j++) {
+    this.distanceObjects = [];
+
+    distanceEachOthers.forEach((source, i) => {
+      source.distanceTo.forEach((distance, j) => {
         const distanceObject = new DistanceObject({
           predictionId,
           objectSourceIndex: i,
           objectTargetIndex: j,
-          distance: distanceEachOthers[i][j],
+          distance: parseFloat(distance),
         });
 
-        distanceObjects.push(distanceObject);
-      }
-    }
-
-    this.distanceObjects = distanceObjects;
+        this.distanceObjects.push(distanceObject);
+      });
+    });
 
     return this;
   }
