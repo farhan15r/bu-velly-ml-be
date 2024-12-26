@@ -110,9 +110,12 @@ const getPredictById = async (req, res, next) => {
     const prediction = new Prediction();
     await prediction.getById(id);
 
+    const predictionLabels = (await (new PredictionLabels().getAllByPredictionId(id))).predictionLabels;
+
     const distanceObjects = new DistanceObjects();
     await distanceObjects.getAllByPredictionId(id);
-    prediction.distanceObjects = distanceObjects.transformToArr2D();
+    prediction.distanceObjects =
+      distanceObjects.transformToDistanceEachOthers(predictionLabels);
 
     res.json(prediction);
   } catch (error) {

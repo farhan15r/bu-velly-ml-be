@@ -104,6 +104,46 @@ class DistanceObjects {
 
     return arr2D;
   }
+
+  transformToDistanceEachOthers(predictionLabels) {
+    const distanceArr2D = this.transformToArr2D();
+
+    const distanceEachOthers = [];
+
+    for (let i = 0; i < distanceArr2D.length; i++) {
+      const sourceObject = {
+        objectSourceIndex: i,
+        label: predictionLabels[i].label,
+        distanceTo: [],
+      };
+
+      for (let j = 0; j < distanceArr2D[i].length; j++) {
+        if (i === j) {
+          continue;
+        }
+
+        const distanceTo = {
+          objectDestinationIndex: j,
+          label: predictionLabels[j].label,
+          distance: distanceArr2D[i][j],
+        };
+
+        // insert distance sortest first
+        const index = sourceObject.distanceTo.findIndex(
+          (distance) => distance.distance > distanceTo.distance
+        );
+        if (index === -1) {
+          sourceObject.distanceTo.push(distanceTo);
+        } else {
+          sourceObject.distanceTo.splice(index, 0, distanceTo);
+        }
+      }
+
+      distanceEachOthers.push(sourceObject);
+    }
+
+    return distanceEachOthers;
+  }
 }
 
 export default DistanceObjects;
