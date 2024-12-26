@@ -95,9 +95,9 @@ const postPredict = async (req, res, next) => {
 
     res.status(201).json({
       id: convert.imgName,
-      uploaded_image: `/${imgUploadPath}`,
-      result_image: `/${imgResultPath}`,
-      distanceEachOthers,
+      uploadUrl: `/${imgUploadPath}`,
+      resultUrl: `/${imgResultPath}`,
+      distanceObjects: distanceEachOthers,
     });
   } catch (error) {
     next(error);
