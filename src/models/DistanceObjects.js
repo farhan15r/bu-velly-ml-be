@@ -16,16 +16,15 @@ class DistanceObjects {
    * @returns {DistanceObjects}
    */
   transform(predictionId, distanceEachOthers = [distanceTransform]) {
-
     this.distanceObjects = [];
 
     distanceEachOthers.forEach((source, i) => {
-      source.distanceTo.forEach((distance, j) => {
+      source.distanceTo.forEach((destination, j) => {
         const distanceObject = new DistanceObject({
           predictionId,
-          objectSourceIndex: i,
-          objectTargetIndex: j,
-          distance: parseFloat(distance),
+          objectSourceIndex: source.objectSourceIndex,
+          objectTargetIndex: destination.objectDestinationIndex,
+          distance: parseFloat(destination.distance),
         });
 
         this.distanceObjects.push(distanceObject);
