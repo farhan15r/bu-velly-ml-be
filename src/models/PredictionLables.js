@@ -51,20 +51,26 @@ class PredictionLabels {
   }
 
   async getAllByPredictionId(predictionId) {
-    if (!this.#client) {
-      this.#client = await pool.connect();
+    try {
+      if (!this.#client) {
+        this.#client = await pool.connect();
+      }
+
+      const query = `SELECT * FROM prediction_labels WHERE prediction_id = $1 ORDER BY object_index`;
+      const { rows } = await this.#client.query(query, [predictionId]);
+
+      if (rows.length === 0) {
+        throw new NotFoundError("Prediction Labels not found");
+      }
+
+      this.predictionLabels = rows;
+
+      return this;
+    } catch (error) {
+      throw error;
+    } finally {
+      this.#client.release();
     }
-
-    const query = `SELECT * FROM prediction_labels WHERE prediction_id = $1 ORDER BY object_index`;
-    const { rows } = await this.#client.query(query, [predictionId]);
-
-    if (rows.length === 0) {
-      throw new NotFoundError("Prediction Labels not found");
-    }
-
-    this.predictionLabels = rows;
-
-    return this;
   }
 }
 
